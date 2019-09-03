@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+	<style>
+	html,body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+ }
+ 
+img {
+    width: 90%;
+    display: block;
+    margin: 10px auto;
+}
+	</style>
+        <script src="dist/brainDACL.js"></script>
+        <script type="application/javascript">
+
+const samples = [[0,0,0,1,0,0,  // positive samples
+				  0,1,1,0,1,0, 
+				  1,0,0,0,0,1, 
+				  1,0,0,0,0,1, 
+				  0,1,0,0,1,0, 
+				  0,0,1,1,0,0], //1
+				 [0,0,1,1,0,0, 
+				  0,1,0,0,1,0, 
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0],  //2
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  0,1,0,0,0,1,
+				  1,0,0,0,1,0,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0], //3
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  0,1,0,0,0,1,
+				  1,0,0,0,1,0,
+				  1,0,0,0,1,0,
+				  0,1,1,1,0,0], //4
+				 [0,1,1,1,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,1,1,1,0], //5
+				 [0,1,1,1,1,0,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  0,1,1,1,1,0], //6
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0], //7
+				 [0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0], //8
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0], //9
+				 [0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0], //1
+				 [0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  1,1,1,1,1,1,
+				  0,0,0,1,0,0,
+				  0,0,1,0,0,0,
+				  0,0,0,1,0,0], //2
+	  			 [0,0,1,0,0,0, 
+				  1,0,0,1,0,0,
+				  0,1,1,1,1,0,
+				  0,1,1,0,0,0,
+				  0,0,1,0,0,1,
+				  0,0,1,0,0,0], //3
+	  			 [0,0,1,0,0,0, 
+				  0,0,1,0,0,0,
+				  0,1,1,1,1,0,
+				  0,0,1,0,0,0,
+				  0,0,0,1,0,0,
+				  0,0,1,0,0,0], //4
+				 [1,1,1,1,1,1, 
+				  0,0,1,0,0,0,
+				  0,1,1,1,1,1,
+				  0,0,1,0,0,0,
+				  0,0,1,0,0,0,
+				  1,1,1,1,1,1] //5
+				 ];
+
+const labels = [[1],[1],[1],[1],[1],[1],[1],[1],[1],[0],[0],[0],[0],[0]];
+
+//const samples = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]];		
+//const labels = [[0,0],[1,1],[0,0],[1,1],[0,0],[0,0],[1,1],[1,1]];
+	
+const orderedData = samples.map((sample,index) => {
+    return {
+        input: sample,
+        output: labels[index]
+    }
+});
+
+DATA = orderedData;
+console.log('data: ', DATA);
+const trainData = DATA;
+
+const testData = [[0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,1,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0], //1
+				 [0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0],
+	  			 [0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  1,1,1,1,1,0,
+				  0,0,0,1,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,1,0,0], // negative samples
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,1,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0] //2
+];
+				  
+
+//const testData = [[1,1,1],[1,0,1],[0,0,0],[0,0,1]];
+console.log('trainData: ', trainData);
+console.log('testData: ', testData);
+//console.log('Got ' + trainData.length + ' samples');
+
+leakyReluAlpha = 0.2;
+learningrate = 0.2;
+activation = 'sigmoid';
+const net = new brain.NeuralNetwork({
+  leakyReluAlpha: leakyReluAlpha,
+  activation: activation, // activation function
+  hiddenLayers: [12],
+  iterations: 400,
+  learningRate: learningrate , // global learning rate, useful when training using streams
+  binaryThresh: 0.5,
+});
+const net1 = new brain.NeuralNetwork({
+  leakyReluAlpha: leakyReluAlpha ,
+  activation: activation, // activation function
+  hiddenLayers: [12],
+  iterations: 400,
+  learningRate: learningrate , // global learning rate, useful when training using streams
+  binaryThresh: 0.5,
+});
+//net.train(trainData);
+net.train(trainData, {
+		iterations: 4000,
+		errorThresh: 0.05,
+		log: true,
+		logPeriod: 1,
+		learningRate: learningrate 
+	});
+net1.train(trainData, {
+		iterations: 4000,
+		errorThresh: 0.05,
+		log: true,
+		logPeriod: 1,
+		learningRate: learningrate 
+	});
+console.log('net: ', net);
+console.log('testdata: ', testData.length);
+output  = net.run([0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0]);
+output1 = net.run([0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0]);
+output2 = net.run([0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  1,1,1,1,1,1,
+				  0,0,0,1,0,0,
+				  0,0,0,1,0,0,
+				  0,0,0,1,0,0]);
+output3 = net.run([0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0]);
+outp  = net1.run([0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0]);
+outp1 = net1.run([0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0]);
+outp2 = net1.run([0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  1,1,1,1,1,1,
+				  0,0,0,1,0,0,
+				  0,0,0,1,0,0,
+				  0,0,0,1,0,0]);
+outp3 = net1.run([0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0]);
+//
+console.log ('Net  [1] : ', output);
+console.log ('Net [0] : ', output1);
+console.log ('Net [0] : ', output2);
+console.log ('Net [1] : ', output3);
+console.log ('Net1  [1] : ', outp);
+console.log ('Net1 [0] : ', outp1);
+console.log ('Net1 [0] : ', outp2);
+console.log ('Net1 [1] : ', outp3);
+			
+//const accuracy = getAccuracy(net, testData);
+// calc accuracy
+//
+accuracy = (output[0] + outp[0] +  output3[0] +  outp3[0])/4;
+Naccuracy = (4-(output1[0]  + outp1[0]  + output2[0]  + outp2[0] ))/4;	
+Taccuracy = (accuracy + Naccuracy)/2;	
+			
+console.log(' accuracy: ', accuracy);
+console.log('Naccuracy: ', Naccuracy);
+console.log('Taccuracy: ', Taccuracy);	
+			
+	</script>
+    </head>
+    <body>
+		<div id="dataPoint"></div>Brain.js TEST Binary input:
+        <!--img src="https://i.imgur.com/3yCNsh4.png"-->
+    </body>
+</html>

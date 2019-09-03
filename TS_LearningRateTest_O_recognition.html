@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <!-- Load TensorFlow.js -->
+ <!-- Load TensorFlow.js. This is required to use MobileNet. -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"> </script>
+<!-- Load the MobileNet model. -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"> </script>
+
+<!-- Replace this with your image. Make sure CORS settings allow reading the image! -->
+<!-- Place your code in the script tag below. You can also use an external .js file -->
+<script>
+// Solve for O pattern
+const LEARNING_RATE = .33;
+const EPOCHS = 20;
+const HIDDENNODES = 10;
+ console.log("Learning Rate: " + LEARNING_RATE + " / Epochs: " + EPOCHS + " / Hidden Nodes: " + HIDDENNODES);
+// Define the training data
+//	const xs = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]];
+//	const ys = [0,1,0,1,0,0,1,1];
+	const xs =  [[0,0,0,1,0,0,  // positive samples
+				  0,1,1,0,1,0, 
+				  1,0,0,0,0,1, 
+				  1,0,0,0,0,1, 
+				  0,1,0,0,1,0, 
+				  0,0,1,1,0,0], //1
+				 [0,0,1,1,0,0, 
+				  0,1,0,0,1,0, 
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0],  //2
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  0,1,0,0,0,1,
+				  1,0,0,0,1,0,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0], //3
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  0,1,0,0,0,1,
+				  1,0,0,0,1,0,
+				  1,0,0,0,1,0,
+				  0,1,1,1,0,0], //4
+				 [0,1,1,1,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,1,1,1,0], //5
+				 [0,1,1,1,1,0,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  0,1,1,1,1,0], //6
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0], //7
+				 [0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0], //8
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0], //9
+				 [0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0], //1
+				 [0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  1,1,1,1,1,1,
+				  0,0,0,1,0,0,
+				  0,0,1,0,0,0,
+				  0,0,0,1,0,0], //2
+	  			 [0,0,1,0,0,0, 
+				  1,0,0,1,0,0,
+				  0,1,1,1,1,0,
+				  0,1,1,0,0,0,
+				  0,0,1,0,0,1,
+				  0,0,1,0,0,0], //3
+	  			 [0,0,1,0,0,0, 
+				  0,0,1,0,0,0,
+				  0,1,1,1,1,0,
+				  0,0,1,0,0,0,
+				  0,0,0,1,0,0,
+				  0,0,1,0,0,0], //4
+				 [1,1,1,1,1,1, 
+				  0,0,1,0,0,0,
+				  0,1,1,1,1,1,
+				  0,0,1,0,0,0,
+				  0,0,1,0,0,0,
+				  1,1,1,1,1,1], //5
+				 [0,0,1,0,0,0, 
+				  1,0,1,0,0,1,
+				  1,1,1,1,1,1,
+				  1,0,1,0,0,1,
+				  0,0,0,1,0,0,
+				  0,0,1,0,0,0], //6
+				 [0,0,1,1,0,0, 
+				  0,0,1,1,0,0,
+				  1,1,1,1,1,1,
+				  1,1,1,1,1,1,
+				  0,0,1,1,0,0,
+				  0,0,1,1,0,0]
+				 ];
+
+const ys = [1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0];
+
+	
+// Instantiate the training tensors
+let xTrain = tf.tensor2d(xs, [16,36]);
+let yTrain = tf.oneHot(tf.tensor1d(ys).toInt(), 2);
+
+// Define the model.
+const model = tf.sequential();
+// Set up the network layers
+//model.add(tf.layers.dense({units: HIDDENNODES, activation: 'relu', inputShape: [36]}));
+	
+model.add(tf.layers.dense({units: HIDDENNODES, activation: 'sigmoid', inputShape: [36]}));
+model.add(tf.layers.dense({units: 2, activation: 'softmax', outputShape: [2]}));
+// Define the optimizer
+const optimizer = tf.train.adam(LEARNING_RATE);
+//const optimizer = tf.train.rmsprop(LEARNING_RATE);
+//const optimizer = tf.train.adadelta(LEARNING_RATE);
+//	const optimizer = tf.train.sgd(LEARNING_RATE);
+//
+// Init the model
+model.compile({
+    optimizer: optimizer,
+    //loss: 'binaryCrossentropy',
+	loss: 'categoricalCrossentropy',
+    //metrics: ['accuracy'],
+	metrics: ['binaryAccuracy'],
+});
+// Train the model
+const history = model.fit(xTrain, yTrain, {
+  epochs: EPOCHS,
+  validationData: [xTrain, yTrain],
+}).then(()=>{
+  // Try the model on a value
+   console.log("1st TRUE:");	
+   const input = tf.tensor2d(
+	   			 [0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0],[1,36]);
+   const predictOut = model.predict(input);
+   const logits = Array.from(predictOut.dataSync());
+   console.log('prediction', logits, predictOut.argMax(-1).dataSync()[0]);
+//
+   console.log("2nd FALSE:");
+   const input1 = tf.tensor2d(
+	   			 [0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0],[1,36]);
+   const predictOut1 = model.predict(input1);
+   const logits1 = Array.from(predictOut1.dataSync());
+   console.log('prediction', logits1, predictOut1.argMax(-1).dataSync()[0]);
+//
+   console.log("3rd FALSE:");
+   const input2 = tf.tensor2d(
+	   			 [0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  1,1,1,1,1,1,
+				  0,0,0,1,0,0,
+				  0,0,0,1,0,0,
+				  0,0,0,1,0,0],[1,36]);
+   const predictOut2 = model.predict(input2);
+   const logits2 = Array.from(predictOut2.dataSync());
+   console.log('prediction', logits2, predictOut2.argMax(-1).dataSync()[0]);
+//
+   console.log("4th: TRUE");
+   const input3 = tf.tensor2d(
+	   			 [0,1,1,1,1,0,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  0,1,1,1,1,0],[1,36]);
+   const predictOut3 = model.predict(input3);
+   const logits3 = Array.from(predictOut3.dataSync());
+   console.log('prediction', logits3, predictOut3.argMax(-1).dataSync()[0]);
+//
+   console.log("5th: FALSE/near True");
+   const input4 = tf.tensor2d(
+	   			 [0,1,1,1,1,0,
+				  1,1,0,0,0,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  1,1,0,0,1,1,
+				  0,1,1,1,1,0],[1,36]);
+   const predictOut4 = model.predict(input4);
+   const logits4 = Array.from(predictOut4.dataSync());
+   console.log('prediction', logits4, predictOut4.argMax(-1).dataSync()[0]);
+//
+   console.log("6th: FALSE/near False");
+   const input5 = tf.tensor2d(
+	   			 [0,1,1,1,1,0, 
+				  0,0,1,0,0,0,
+				  0,1,1,1,1,0,
+				  0,0,1,0,0,0,
+				  0,0,1,0,0,0,
+				  0,1,1,1,1,0],[1,36]);
+   const predictOut5 = model.predict(input5);
+   const logits5 = Array.from(predictOut5.dataSync());
+   console.log('prediction', logits5, predictOut5.argMax(-1).dataSync()[0]);
+
+	const testData = tf.tensor2d([
+				 [0,1,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,0,1,
+				  1,0,0,0,1,1,
+				  0,1,0,0,1,1,
+				  0,0,1,1,0,0], //1
+				 [0,0,0,0,0,0, // negative samples
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,0,0,0],
+	  			 [0,0,0,1,0,0, 
+				  0,0,0,1,0,0,
+				  0,1,1,1,1,0,
+				  0,0,0,1,0,0,
+				  0,0,0,0,0,0,
+				  0,0,0,1,0,0], // negative samples
+				 [0,0,1,1,0,0,
+				  0,1,0,0,1,0,
+				  1,0,0,0,1,1,
+				  1,0,0,0,0,1,
+				  0,1,0,0,1,0,
+				  0,0,1,1,0,0] //2
+]);
+		console.log("Test Data:");
+
+ const predictOut6 = model.predict(testData);
+ const logits6 = Array.from(predictOut6.dataSync());
+ console.log('prediction', logits6, predictOut6.argMax(-1).dataSync()[0]);
+	//
+	// calc accuracy of results
+accuracy = (logits[1] + logits3[1] +  logits4[1])/3;
+Naccuracy = (logits1[0]  + logits2[0]  + logits5[0])/3;	
+Taccuracy = (accuracy + Naccuracy)/2;	
+			
+console.log(' accuracy: ', accuracy);
+console.log('Naccuracy: ', Naccuracy);
+console.log('Taccuracy: ', Taccuracy);	
+});
+</script>
+</head>
+
+</html>
